@@ -1,0 +1,21 @@
+# Ignore unit test files
+tests/
+**/*_test.go
+
+# Ignore editor and IDE files
+.vscode/
+.idea/
+*.swp
+
+# Ignore build artifacts
+bin/
+obj/
+
+# Ignore logs
+*.log
+
+# Ignore dependencies if they are installed during the Docker build
+vendor/
+
+# Ignore environment files
+.env
