@@ -8,15 +8,15 @@ package wire_excel
 
 import (
 	"github.com/google/wire"
-	"github.com/ryvasa/go-super-farmer/cmd/report/app"
-	"github.com/ryvasa/go-super-farmer/pkg/database"
-	"github.com/ryvasa/go-super-farmer/pkg/env"
-	"github.com/ryvasa/go-super-farmer/pkg/messages"
-	"github.com/ryvasa/go-super-farmer/service_report/dilevery/http/handler"
-	"github.com/ryvasa/go-super-farmer/service_report/dilevery/http/routes"
-	"github.com/ryvasa/go-super-farmer/service_report/repository"
-	"github.com/ryvasa/go-super-farmer/service_report/usecase"
-	"github.com/ryvasa/go-super-farmer/utils"
+	"github.com/ryvasa/go-super-farmer-report-service/cmd/app"
+	"github.com/ryvasa/go-super-farmer-report-service/internal/dilevery/http/handler"
+	"github.com/ryvasa/go-super-farmer-report-service/internal/dilevery/http/routes"
+	"github.com/ryvasa/go-super-farmer-report-service/internal/repository"
+	"github.com/ryvasa/go-super-farmer-report-service/internal/usecase"
+	"github.com/ryvasa/go-super-farmer-report-service/pkg/database"
+	"github.com/ryvasa/go-super-farmer-report-service/pkg/env"
+	"github.com/ryvasa/go-super-farmer-report-service/pkg/messages"
+	"github.com/ryvasa/go-super-farmer-report-service/utils"
 )
 
 // Injectors from wire.go:

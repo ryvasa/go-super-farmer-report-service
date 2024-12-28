@@ -47,7 +47,5 @@ func NewPostgres(env *env.Env) (*gorm.DB, error) {
 		&domain.Sale{},
 	)
 
-	// seeders.Seeders(db)
-
 	return db, nil
 }

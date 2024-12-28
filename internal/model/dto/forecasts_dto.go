@@ -3,7 +3,7 @@ package dto
 import (
 	"time"
 
-	"github.com/ryvasa/go-super-farmer/internal/model/domain"
+	"github.com/ryvasa/go-super-farmer-report-service/internal/model/domain"
 )
 
 type ForecastsResponseDTO struct {

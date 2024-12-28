@@ -2,7 +2,7 @@ package database
 
 import (
 	"github.com/go-redis/redis/v8"
-	"github.com/ryvasa/go-super-farmer/pkg/env"
+	"github.com/ryvasa/go-super-farmer-report-service/pkg/env"
 )
 
 func NewRedisClient(env *env.Env) *redis.Client {

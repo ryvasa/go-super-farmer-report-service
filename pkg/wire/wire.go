@@ -5,7 +5,7 @@ package wire_excel
 
 import (
 	"github.com/google/wire"
-	"github.com/ryvasa/go-super-farmer-report-service/cmd/report/app"
+	"github.com/ryvasa/go-super-farmer-report-service/cmd/app"
 	report_handler "github.com/ryvasa/go-super-farmer-report-service/internal/dilevery/http/handler"
 	report_route "github.com/ryvasa/go-super-farmer-report-service/internal/dilevery/http/routes"
 	"github.com/ryvasa/go-super-farmer-report-service/internal/repository"
