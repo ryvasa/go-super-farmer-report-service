@@ -5,6 +5,12 @@
 This is a simple service to generate a report of the super farmer.
 Please read demain service for more information.
 
+## Development
+
+```bash
+air
+```
+
 ## Build
 
 ```bash
