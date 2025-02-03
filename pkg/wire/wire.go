@@ -13,6 +13,7 @@ import (
 	"github.com/ryvasa/go-super-farmer-report-service/pkg/database"
 	"github.com/ryvasa/go-super-farmer-report-service/pkg/env"
 	"github.com/ryvasa/go-super-farmer-report-service/pkg/messages"
+	"github.com/ryvasa/go-super-farmer-report-service/pkg/minio"
 	"github.com/ryvasa/go-super-farmer-report-service/utils"
 )
 
@@ -21,6 +22,7 @@ var allSet = wire.NewSet(
 	env.LoadEnv,
 	database.NewPostgres,
 	messages.NewRabbitMQ,
+	minio.NewMinioClient,
 
 	// Repository
 	repository.NewReportRepositoryImpl,

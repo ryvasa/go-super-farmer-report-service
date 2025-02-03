@@ -16,6 +16,7 @@ import (
 	"github.com/ryvasa/go-super-farmer-report-service/pkg/database"
 	"github.com/ryvasa/go-super-farmer-report-service/pkg/env"
 	"github.com/ryvasa/go-super-farmer-report-service/pkg/messages"
+	"github.com/ryvasa/go-super-farmer-report-service/pkg/minio"
 	"github.com/ryvasa/go-super-farmer-report-service/utils"
 )
 
@@ -41,10 +42,11 @@ func InitializeReportApp() (*app.ReportApp, error) {
 	reportHandler := report_handler.NewReportHandler(reportUsecase, excelInterface, rabbitMQ)
 	handlers := report_handler.NewHandlers(reportHandler)
 	engine := report_route.NewRoutes(handlers)
-	reportApp := app.NewApp(engine, envEnv, db, rabbitMQ, handlers)
+	client := minio.NewMinioClient(envEnv)
+	reportApp := app.NewApp(engine, envEnv, db, rabbitMQ, handlers, client)
 	return reportApp, nil
 }
 
 // wire.go:
 
-var allSet = wire.NewSet(env.LoadEnv, database.NewPostgres, messages.NewRabbitMQ, repository.NewReportRepositoryImpl, usecase.NewExcelImpl, usecase.NewReportUsecase, report_handler.NewReportHandler, app.NewApp, report_route.NewRoutes, report_handler.NewHandlers, utils.NewGlobFunc)
+var allSet = wire.NewSet(env.LoadEnv, database.NewPostgres, messages.NewRabbitMQ, minio.NewMinioClient, repository.NewReportRepositoryImpl, usecase.NewExcelImpl, usecase.NewReportUsecase, report_handler.NewReportHandler, app.NewApp, report_route.NewRoutes, report_handler.NewHandlers, utils.NewGlobFunc)

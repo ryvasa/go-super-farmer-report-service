@@ -2,6 +2,8 @@ package env
 
 import (
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type Env struct {
@@ -45,14 +47,19 @@ type Env struct {
 		ModelPath  string
 		PolicyPath string
 	}
+	MinIO struct {
+		ID       string
+		Secret   string
+		EndPoint string
+	}
 }
 
 func LoadEnv() (*Env, error) {
 	// GODOTENV for development only
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	err := godotenv.Load()
+	if err != nil {
+		return nil, err
+	}
 	env := &Env{}
 
 	// Load Server Config
@@ -94,6 +101,11 @@ func LoadEnv() (*Env, error) {
 	// Casbin
 	env.Casbin.ModelPath = os.Getenv("CASBIN_MODEL_PATH")
 	env.Casbin.PolicyPath = os.Getenv("CASBIN_POLICY_PATH")
+
+	// MINIO
+	env.MinIO.ID = os.Getenv("MINIO_ID")
+	env.MinIO.Secret = os.Getenv("MINIO_SECRET")
+	env.MinIO.EndPoint = os.Getenv("MINIO_ENDPOINT")
 
 	return env, nil
 }
