@@ -1,19 +1,29 @@
 syntax = "proto3";
 
-package user;
+package report_proto;
 
 option go_package = "proto/generated";
 
-service UserService {
-  rpc GetUser (UserRequest) returns (UserResponse);
+service ReportService {
+  rpc GetReportPrice (PriceParams) returns (ReportResponse){}
+  rpc GetReportHarvest (HarvestParams) returns (ReportResponse){}
 }
 
-message UserRequest {
-  string id = 1;
+// Struktur data yang digunakan
+message PriceParams {
+  string commodity_id = 1;
+  int64 city_id = 2;
+  string start_date = 3;
+  string end_date = 4;
 }
 
-message UserResponse {
-  string id = 1;
-  string name = 2;
-  string email = 3;
+message HarvestParams {
+  string land_commodity_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+}
+
+// Response dari report service
+message ReportResponse {
+  string report_url = 1;
 }

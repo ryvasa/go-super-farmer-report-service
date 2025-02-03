@@ -15,6 +15,7 @@ type LandCommodity struct {
 	Commodity   *Commodity     `gorm:"foreignKey:CommodityID;references:ID"`
 	LandID      uuid.UUID      `gorm:"not null"`
 	Land        *Land          `gorm:"foreignKey:LandID;references:ID"`
+	Harvested   bool           `gorm:"not null;default:false"`
 	CreatedAt   time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt   time.Time      `gorm:"autoUpdateTime"`
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
