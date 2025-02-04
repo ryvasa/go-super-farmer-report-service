@@ -9,13 +9,12 @@ package wire_excel
 import (
 	"github.com/google/wire"
 	"github.com/ryvasa/go-super-farmer-report-service/cmd/app"
-	"github.com/ryvasa/go-super-farmer-report-service/internal/dilevery/http/handler"
-	"github.com/ryvasa/go-super-farmer-report-service/internal/dilevery/http/routes"
+	"github.com/ryvasa/go-super-farmer-report-service/internal/dilevery/handler"
 	"github.com/ryvasa/go-super-farmer-report-service/internal/repository"
 	"github.com/ryvasa/go-super-farmer-report-service/internal/usecase"
 	"github.com/ryvasa/go-super-farmer-report-service/pkg/database"
 	"github.com/ryvasa/go-super-farmer-report-service/pkg/env"
-	"github.com/ryvasa/go-super-farmer-report-service/pkg/messages"
+	"github.com/ryvasa/go-super-farmer-report-service/pkg/minio"
 	"github.com/ryvasa/go-super-farmer-report-service/utils"
 )
 
@@ -30,21 +29,15 @@ func InitializeReportApp() (*app.ReportApp, error) {
 	if err != nil {
 		return nil, err
 	}
+	client := minio.NewMinioClient(envEnv)
 	reportRepository := repository.NewReportRepositoryImpl(db)
 	globFunc := utils.NewGlobFunc()
-	excelInterface := usecase.NewExcelImpl(globFunc)
+	excelInterface := usecase.NewExcelImpl(globFunc, client)
 	reportUsecase := usecase.NewReportUsecase(reportRepository, excelInterface)
-	rabbitMQ, err := messages.NewRabbitMQ(envEnv)
-	if err != nil {
-		return nil, err
-	}
-	reportHandler := report_handler.NewReportHandler(reportUsecase, excelInterface, rabbitMQ)
-	handlers := report_handler.NewHandlers(reportHandler)
-	engine := report_route.NewRoutes(handlers)
-	reportApp := app.NewApp(engine, envEnv, db, rabbitMQ, handlers)
+	reportApp := app.NewApp(envEnv, db, client, reportUsecase)
 	return reportApp, nil
 }
 
 // wire.go:
 
-var allSet = wire.NewSet(env.LoadEnv, database.NewPostgres, messages.NewRabbitMQ, repository.NewReportRepositoryImpl, usecase.NewExcelImpl, usecase.NewReportUsecase, report_handler.NewReportHandler, app.NewApp, report_route.NewRoutes, report_handler.NewHandlers, utils.NewGlobFunc)
+var allSet = wire.NewSet(env.LoadEnv, database.NewPostgres, minio.NewMinioClient, repository.NewReportRepositoryImpl, usecase.NewExcelImpl, usecase.NewReportUsecase, handler.NewReportHandler, app.NewApp, utils.NewGlobFunc)

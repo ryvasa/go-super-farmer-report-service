@@ -15,6 +15,7 @@ type User struct {
 	RoleID    int64          `gorm:"not null;default:1"`
 	Role      Role           `gorm:"foreignKey:RoleID"`
 	Phone     *string        `gorm:"type:varchar(20)"`
+	Verified  bool           `gorm:"not null;default:false"`
 	CreatedAt time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`

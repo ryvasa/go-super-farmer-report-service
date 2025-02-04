@@ -1,11 +1,14 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/minio/minio-go/v7"
 	"github.com/ryvasa/go-super-farmer-report-service/internal/model/domain"
 	"github.com/ryvasa/go-super-farmer-report-service/internal/model/dto"
 	"github.com/ryvasa/go-super-farmer-report-service/pkg/logrus"
@@ -14,14 +17,15 @@ import (
 )
 
 type ExcelImpl struct {
-	globFunc utils.GlobFunc
+	globFunc    utils.GlobFunc
+	minioClient *minio.Client
 }
 
-func NewExcelImpl(globFunc utils.GlobFunc) ExcelInterface {
-	return &ExcelImpl{globFunc}
+func NewExcelImpl(globFunc utils.GlobFunc, minioClient *minio.Client) ExcelInterface {
+	return &ExcelImpl{globFunc, minioClient}
 }
 
-func (e *ExcelImpl) CreatePriceHistoryReport(results []domain.PriceHistory, commodityName, regionName string, commodityID uuid.UUID, cityID int64, startDate, endDate time.Time) error {
+func (e *ExcelImpl) CreatePriceHistoryReport(results []domain.PriceHistory, commodityName, regionName string, commodityID uuid.UUID, cityID int64, startDate, endDate time.Time) (string, error) {
 	// Buat file Excel baru
 	f := excelize.NewFile()
 
@@ -29,7 +33,7 @@ func (e *ExcelImpl) CreatePriceHistoryReport(results []domain.PriceHistory, comm
 	sheetName := "Price History Report"
 	index, err := f.NewSheet(sheetName)
 	if err != nil {
-		return fmt.Errorf("error creating sheet: %v", err)
+		return "", fmt.Errorf("error creating sheet: %v", err)
 	}
 	f.SetActiveSheet(index)
 
@@ -66,7 +70,7 @@ func (e *ExcelImpl) CreatePriceHistoryReport(results []domain.PriceHistory, comm
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("error creating style: %v", err)
+		return "", fmt.Errorf("error creating style: %v", err)
 	}
 
 	// Style untuk data numerik (rata kanan)
@@ -142,21 +146,63 @@ func (e *ExcelImpl) CreatePriceHistoryReport(results []domain.PriceHistory, comm
 		}
 	}
 
-	// Buat nama file dengan timestamp
-	fileName := fmt.Sprintf("./public/reports/price_history_%s_%d_%s_%s_%s.xlsx",
+	// // Buat nama file dengan timestamp
+	// fileName := fmt.Sprintf("./public/reports/price_history_%s_%d_%s_%s_%s.xlsx",
+	// 	commodityID,
+	// 	cityID,
+	// 	startDate.Format("2006-01-02"),
+	// 	endDate.Format("2006-01-02"),
+	// 	time.Now().Format("20060102_150405"))
+
+	// // Simpan file
+	// if err := f.SaveAs(fileName); err != nil {
+	// 	return fmt.Errorf("error saving excel file: %v", err)
+	// }
+	// Simpan ke buffer (bukan file lokal)
+	var buffer bytes.Buffer
+	if err := f.Write(&buffer); err != nil {
+		return "", fmt.Errorf("error writing to buffer: %v", err)
+	}
+
+	// Nama bucket dan file
+	bucketName := "reports"
+	fileName := fmt.Sprintf("price_history_%s_%d_%s_%s_%s.xlsx",
 		commodityID,
 		cityID,
 		startDate.Format("2006-01-02"),
 		endDate.Format("2006-01-02"),
-		time.Now().Format("20060102_150405"))
+		time.Now().Format("20060102_150405"),
+	)
 
-	// Simpan file
-	if err := f.SaveAs(fileName); err != nil {
-		return fmt.Errorf("error saving excel file: %v", err)
+	// Pastikan bucket tersedia
+	ctx := context.Background()
+	exists, err := e.minioClient.BucketExists(ctx, bucketName)
+	if err != nil {
+		return "", fmt.Errorf("error checking bucket: %v", err)
+	}
+	if !exists {
+		err = e.minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{})
+		if err != nil {
+			return "", fmt.Errorf("error creating bucket: %v", err)
+		}
 	}
 
-	logrus.Log.WithField("Excel file created successfully:", fileName)
-	return nil
+	// Upload buffer langsung ke MinIO
+	_, err = e.minioClient.PutObject(ctx, bucketName, fileName, bytes.NewReader(buffer.Bytes()), int64(buffer.Len()), minio.PutObjectOptions{
+		ContentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+	})
+	if err != nil {
+		return "", fmt.Errorf("error uploading to MinIO: %v", err)
+	}
+
+	// URL untuk mengakses file
+	fileURL := fmt.Sprintf("http://localhost:9000/%s/%s", bucketName, fileName)
+	log.Printf("Excel file uploaded successfully: %s", fileURL)
+
+	return fileURL, nil
+
+	// logrus.Log.WithField("Excel file created successfully:", fileName)
+	// return nil
 }
 
 func (e *ExcelImpl) CreateHarvestReport(results []domain.Harvest, commodityName, regionName, farmerName string, commodityID uuid.UUID, startDate, endDate time.Time) error {
